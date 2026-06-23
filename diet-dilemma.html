@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>나 어떻게 될까? 🍜</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --pink: #FF6B9D;
+    --mint: #5BC8AF;
+    --yellow: #FFD93D;
+    --bg: #FFF5F8;
+    --dark: #2D2D2D;
+    --soft: #F0F0F0;
+  }
+
+  body {
+    font-family: 'Nanum Gothic', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── SCREENS ── */
+  .screen {
+    width: 100vw;
+    height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px;
+    position: absolute;
+    top: 0; left: 0;
+  }
+  .screen.active { display: flex; }
+
+  /* ── SCREEN 1: CHOICE ── */
+  #screen-choice {
+    background: linear-gradient(160deg, #FFF0F5 0%, #F0FFF8 100%);
+  }
+
+  .top-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #999;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .question {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--dark);
+    text-align: center;
+    margin-bottom: 28px;
+    line-height: 1.4;
+  }
+
+  /* Characters split */
+  .characters {
+    display: flex;
+    gap: 0;
+    width: 100%;
+    max-width: 340px;
+    height: 200px;
+    border-radius: 24px;
+    overflow: hidden;
+    margin-bottom: 28px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    position: relative;
+  }
+
+  .char-half {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 16px;
+    position: relative;
+    cursor: pointer;
+    transition: flex 0.4s cubic-bezier(.4,0,.2,1);
+  }
+  .char-half:hover { flex: 1.15; }
+
+  .char-slim { background: linear-gradient(180deg, #C8F6E8 0%, #5BC8AF 100%); }
+  .char-chubby { background: linear-gradient(180deg, #FFD6E7 0%, #FF6B9D 100%); }
+
+  .char-label {
+    position: absolute;
+    top: 14px;
+    font-size: 11px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 1px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+
+  .char-svg {
+    width: 90px;
+    height: 120px;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+    transition: transform 0.3s;
+  }
+  .char-half:hover .char-svg { transform: translateY(-6px) scale(1.05); }
+
+  /* Divider line */
+  .divider-line {
+    position: absolute;
+    left: 50%;
+    top: 0; bottom: 0;
+    width: 3px;
+    background: white;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+
+  /* Choices grid */
+  .choices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    max-width: 340px;
+  }
+
+  .choice-btn {
+    background: white;
+    border: none;
+    border-radius: 16px;
+    padding: 14px 10px;
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dark);
+    cursor: pointer;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.3;
+    text-align: center;
+  }
+  .choice-btn:active { transform: scale(0.95); box-shadow: 0 1px 6px rgba(0,0,0,0.1); }
+
+  .choice-btn .emoji { font-size: 22px; }
+  .choice-btn.good { border-bottom: 3px solid var(--mint); }
+  .choice-btn.bad  { border-bottom: 3px solid var(--pink); }
+
+  /* ── SCREEN 2: RESULT ── */
+  #screen-result {
+    background: #FFF5F8;
+  }
+
+  .result-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .result-char-box {
+    width: 200px;
+    height: 240px;
+    border-radius: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    animation: bounceIn 0.5s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  @keyframes bounceIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .result-char-slim  { background: linear-gradient(180deg, #C8F6E8 0%, #5BC8AF 100%); }
+  .result-char-chubby { background: linear-gradient(180deg, #FFD6E7 0%, #FF6B9D 100%); }
+
+  .result-char-svg { width: 130px; height: 170px; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.18)); }
+
+  .result-msg {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--dark);
+    text-align: center;
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+
+  .result-sub {
+    font-size: 14px;
+    color: #999;
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .btn-back {
+    background: var(--dark);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 15px 40px;
+    font-family: 'Nanum Gothic', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    transition: transform 0.15s;
+  }
+  .btn-back:active { transform: scale(0.95); }
+
+  /* Confetti particles */
+  .confetti-wrap {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .confetti-p {
+    position: absolute;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* Shake animation for chubby result */
+  @keyframes wobble {
+    0%,100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+  }
+  .wobble { animation: wobble 0.4s ease 0.5s 3; }
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: CHOICE -->
+<div class="screen active" id="screen-choice">
+  <p class="top-label">지금 이 순간</p>
+  <h1 class="question">지금 뭘 고민하고 있어? 🤔</h1>
+
+  <div class="characters" id="chars">
+    <div class="char-half char-slim">
+      <span class="char-label">미래의 나 ✨</span>
+      <svg class="char-svg" viewBox="0 0 90 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- slim body -->
+        <ellipse cx="45" cy="22" rx="16" ry="17" fill="#FFDBB5"/>
+        <!-- hair -->
+        <ellipse cx="45" cy="10" rx="17" ry="10" fill="#8B5E3C"/>
+        <ellipse cx="32" cy="20" rx="6" ry="12" fill="#8B5E3C"/>
+        <ellipse cx="58" cy="20" rx="6" ry="12" fill="#8B5E3C"/>
+        <!-- eyes -->
+        <ellipse cx="39" cy="21" rx="2.5" ry="3" fill="#fff"/>
+        <ellipse cx="51" cy="21" rx="2.5" ry="3" fill="#fff"/>
+        <circle cx="39.8" cy="22" r="1.5" fill="#2D2D2D"/>
+        <circle cx="51.8" cy="22" r="1.5" fill="#2D2D2D"/>
+        <!-- blush -->
+        <ellipse cx="36" cy="27" rx="4" ry="2.5" fill="#FFB3C6" opacity="0.6"/>
+        <ellipse cx="54" cy="27" rx="4" ry="2.5" fill="#FFB3C6" opacity="0.6"/>
+        <!-- smile -->
+        <path d="M40 30 Q45 34 50 30" stroke="#C0634A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <!-- neck -->
+        <rect x="41" y="38" width="8" height="8" rx="2" fill="#FFDBB5"/>
+        <!-- body slim -->
+        <path d="M30 46 Q45 42 60 46 L63 90 Q45 95 27 90 Z" fill="#5BC8AF"/>
+        <!-- arms slim -->
+        <path d="M30 50 Q18 60 20 75" stroke="#FFDBB5" stroke-width="9" stroke-linecap="round"/>
+        <path d="M60 50 Q72 60 70 75" stroke="#FFDBB5" stroke-width="9" stroke-linecap="round"/>
+        <!-- hands -->
+        <circle cx="20" cy="77" r="6" fill="#FFDBB5"/>
+        <circle cx="70" cy="77" r="6" fill="#FFDBB5"/>
+        <!-- legs slim -->
+        <path d="M36 90 L32 115" stroke="#FFDBB5" stroke-width="11" stroke-linecap="round"/>
+        <path d="M54 90 L58 115" stroke="#FFDBB5" stroke-width="11" stroke-linecap="round"/>
+        <!-- shoes -->
+        <ellipse cx="30" cy="116" rx="9" ry="5" fill="#2D2D2D"/>
+        <ellipse cx="60" cy="116" rx="9" ry="5" fill="#2D2D2D"/>
+        <!-- sparkles -->
+        <text x="62" y="50" font-size="12">✨</text>
+        <text x="10" y="55" font-size="10">⭐</text>
+      </svg>
+    </div>
+
+    <div class="divider-line"></div>
+
+    <div class="char-half char-chubby">
+      <span class="char-label">현재의 나 🍜</span>
+      <svg class="char-svg" viewBox="0 0 90 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- chubby body -->
+        <ellipse cx="45" cy="22" rx="19" ry="19" fill="#FFDBB5"/>
+        <!-- hair -->
+        <ellipse cx="45" cy="8" rx="20" ry="11" fill="#8B5E3C"/>
+        <ellipse cx="29" cy="20" rx="7" ry="14" fill="#8B5E3C"/>
+        <ellipse cx="61" cy="20" rx="7" ry="14" fill="#8B5E3C"/>
+        <!-- chubby cheeks -->
+        <ellipse cx="30" cy="26" rx="7" ry="5" fill="#FFDBB5"/>
+        <ellipse cx="60" cy="26" rx="7" ry="5" fill="#FFDBB5"/>
+        <!-- eyes -->
+        <ellipse cx="39" cy="21" rx="2.5" ry="2.2" fill="#fff"/>
+        <ellipse cx="51" cy="21" rx="2.5" ry="2.2" fill="#fff"/>
+        <circle cx="39.8" cy="21.5" r="1.4" fill="#2D2D2D"/>
+        <circle cx="51.8" cy="21.5" r="1.4" fill="#2D2D2D"/>
+        <!-- blush big -->
+        <ellipse cx="34" cy="28" rx="6" ry="3.5" fill="#FF9BB5" opacity="0.7"/>
+        <ellipse cx="56" cy="28" rx="6" ry="3.5" fill="#FF9BB5" opacity="0.7"/>
+        <!-- content smile -->
+        <path d="M39 31 Q45 36 51 31" stroke="#C0634A" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <!-- neck short -->
+        <rect x="40" y="40" width="10" height="6" rx="2" fill="#FFDBB5"/>
+        <!-- body chubby round -->
+        <ellipse cx="45" cy="70" rx="22" ry="26" fill="#FF6B9D"/>
+        <!-- belly button -->
+        <ellipse cx="45" cy="78" rx="2" ry="1.5" fill="#E05A8A" opacity="0.5"/>
+        <!-- arms chubby -->
+        <path d="M24 54 Q12 64 16 78" stroke="#FFDBB5" stroke-width="13" stroke-linecap="round"/>
+        <path d="M66 54 Q78 64 74 78" stroke="#FFDBB5" stroke-width="13" stroke-linecap="round"/>
+        <!-- hands chubby -->
+        <circle cx="15" cy="80" r="8" fill="#FFDBB5"/>
+        <circle cx="75" cy="80" r="8" fill="#FFDBB5"/>
+        <!-- food in hand -->
+        <text x="3" y="80" font-size="13">🍜</text>
+        <!-- legs chubby -->
+        <path d="M36 93 L30 115" stroke="#FFDBB5" stroke-width="13" stroke-linecap="round"/>
+        <path d="M54 93 L60 115" stroke="#FFDBB5" stroke-width="13" stroke-linecap="round"/>
+        <!-- shoes -->
+        <ellipse cx="28" cy="116" rx="10" ry="5.5" fill="#2D2D2D"/>
+        <ellipse cx="62" cy="116" rx="10" ry="5.5" fill="#2D2D2D"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="choices-grid">
+    <button class="choice-btn good" onclick="showResult('slim', '운동하러 가자! 💪', '미래의 내가 손짓하고 있어!', '🏃')">
+      <span class="emoji">🏃</span>
+      <span>운동할까</span>
+    </button>
+    <button class="choice-btn bad" onclick="showResult('chubby', '오늘만 누워있어... 😅', '내일부터 진짜로 할 거야!', '🛋️')">
+      <span class="emoji">🛋️</span>
+      <span>누워있을까</span>
+    </button>
+    <button class="choice-btn good" onclick="showResult('slim', '샐러드 먹기로 했어! 🥗', '오늘 나 진짜 잘하는 거 맞지?', '🥗')">
+      <span class="emoji">🥗</span>
+      <span>뭘 먹을까<br><small style="font-size:11px;color:#5BC8AF">건강한 거</small></span>
+    </button>
+    <button class="choice-btn bad" onclick="showResult('chubby', '라면이 날 부르고 있어 🍜', '오늘 하루만... 딱 오늘만!', '🍜')">
+      <span class="emoji">🍜</span>
+      <span>라면 먹고 싶어</span>
+    </button>
+    <button class="choice-btn bad" onclick="showResult('chubby', '치킨 시켰어 🍗', '배달 앱이 자꾸 나를 유혹해...', '🍗')">
+      <span class="emoji">🍗</span>
+      <span>치킨 먹고 싶어</span>
+    </button>
+    <button class="choice-btn good" onclick="showResult('slim', '물 마셨어! 💧', '작은 것부터 시작이야!', '💧')">
+      <span class="emoji">💧</span>
+      <span>물이나 마실까</span>
+    </button>
+    <button class="choice-btn bad" onclick="showResult('chubby', '야식이 최고야 🌙', '다이어트는 내일부터!', '🍕')">
+      <span class="emoji">🍕</span>
+      <span>야식 먹을까</span>
+    </button>
+    <button class="choice-btn good" onclick="showResult('slim', '일찍 잔다! 😴', '수면이 최고의 다이어트!', '😴')">
+      <span class="emoji">😴</span>
+      <span>일찍 잘까</span>
+    </button>
+  </div>
+</div>
+
+<!-- SCREEN 2: RESULT -->
+<div class="screen" id="screen-result">
+  <div class="result-wrap">
+    <div class="result-char-box" id="result-char-box">
+      <svg class="result-char-svg" id="result-svg" viewBox="0 0 90 120" fill="none" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <p class="result-msg" id="result-msg"></p>
+    <p class="result-sub" id="result-sub"></p>
+    <button class="btn-back" onclick="goBack()">다시 고민하기 🔄</button>
+  </div>
+  <div class="confetti-wrap" id="confetti"></div>
+</div>
+
+<script>
+const SLIM_SVG = `
+  <ellipse cx="45" cy="22" rx="16" ry="17" fill="#FFDBB5"/>
+  <ellipse cx="45" cy="10" rx="17" ry="10" fill="#8B5E3C"/>
+  <ellipse cx="32" cy="20" rx="6" ry="12" fill="#8B5E3C"/>
+  <ellipse cx="58" cy="20" rx="6" ry="12" fill="#8B5E3C"/>
+  <ellipse cx="39" cy="21" rx="2.5" ry="3" fill="#fff"/>
+  <ellipse cx="51" cy="21" rx="2.5" ry="3" fill="#fff"/>
+  <circle cx="39.8" cy="22" r="1.5" fill="#2D2D2D"/>
+  <circle cx="51.8" cy="22" r="1.5" fill="#2D2D2D"/>
+  <ellipse cx="36" cy="27" rx="4" ry="2.5" fill="#FFB3C6" opacity="0.6"/>
+  <ellipse cx="54" cy="27" rx="4" ry="2.5" fill="#FFB3C6" opacity="0.6"/>
+  <path d="M40 30 Q45 34 50 30" stroke="#C0634A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <rect x="41" y="38" width="8" height="8" rx="2" fill="#FFDBB5"/>
+  <path d="M30 46 Q45 42 60 46 L63 90 Q45 95 27 90 Z" fill="#5BC8AF"/>
+  <path d="M30 50 Q18 60 20 75" stroke="#FFDBB5" stroke-width="9" stroke-linecap="round"/>
+  <path d="M60 50 Q72 60 70 75" stroke="#FFDBB5" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="20" cy="77" r="6" fill="#FFDBB5"/>
+  <circle cx="70" cy="77" r="6" fill="#FFDBB5"/>
+  <path d="M36 90 L32 115" stroke="#FFDBB5" stroke-width="11" stroke-linecap="round"/>
+  <path d="M54 90 L58 115" stroke="#FFDBB5" stroke-width="11" stroke-linecap="round"/>
+  <ellipse cx="30" cy="116" rx="9" ry="5" fill="#2D2D2D"/>
+  <ellipse cx="60" cy="116" rx="9" ry="5" fill="#2D2D2D"/>
+  <text x="55" y="50" font-size="18">✨</text>
+  <text x="8" y="55" font-size="14">⭐</text>
+  <text x="60" y="72" font-size="12">💪</text>
+`;
+
+const CHUBBY_SVG = `
+  <ellipse cx="45" cy="22" rx="19" ry="19" fill="#FFDBB5"/>
+  <ellipse cx="45" cy="8" rx="20" ry="11" fill="#8B5E3C"/>
+  <ellipse cx="29" cy="20" rx="7" ry="14" fill="#8B5E3C"/>
+  <ellipse cx="61" cy="20" rx="7" ry="14" fill="#8B5E3C"/>
+  <ellipse cx="30" cy="26" rx="7" ry="5" fill="#FFDBB5"/>
+  <ellipse cx="60" cy="26" rx="7" ry="5" fill="#FFDBB5"/>
+  <ellipse cx="39" cy="21" rx="2.5" ry="2.2" fill="#fff"/>
+  <ellipse cx="51" cy="21" rx="2.5" ry="2.2" fill="#fff"/>
+  <circle cx="39.8" cy="21.5" r="1.4" fill="#2D2D2D"/>
+  <circle cx="51.8" cy="21.5" r="1.4" fill="#2D2D2D"/>
+  <ellipse cx="34" cy="28" rx="6" ry="3.5" fill="#FF9BB5" opacity="0.7"/>
+  <ellipse cx="56" cy="28" rx="6" ry="3.5" fill="#FF9BB5" opacity="0.7"/>
+  <path d="M39 31 Q45 36 51 31" stroke="#C0634A" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <rect x="40" y="40" width="10" height="6" rx="2" fill="#FFDBB5"/>
+  <ellipse cx="45" cy="70" rx="22" ry="26" fill="#FF6B9D"/>
+  <ellipse cx="45" cy="78" rx="2" ry="1.5" fill="#E05A8A" opacity="0.5"/>
+  <path d="M24 54 Q12 64 16 78" stroke="#FFDBB5" stroke-width="13" stroke-linecap="round"/>
+  <path d="M66 54 Q78 64 74 78" stroke="#FFDBB5" stroke-width="13" stroke-linecap="round"/>
+  <circle cx="15" cy="80" r="8" fill="#FFDBB5"/>
+  <circle cx="75" cy="80" r="8" fill="#FFDBB5"/>
+  <text x="3" y="82" font-size="15">🍜</text>
+  <path d="M36 93 L30 115" stroke="#FFDBB5" stroke-width="13" stroke-linecap="round"/>
+  <path d="M54 93 L60 115" stroke="#FFDBB5" stroke-width="13" stroke-linecap="round"/>
+  <ellipse cx="28" cy="116" rx="10" ry="5.5" fill="#2D2D2D"/>
+  <ellipse cx="62" cy="116" rx="10" ry="5.5" fill="#2D2D2D"/>
+`;
+
+function showResult(type, msg, sub, emoji) {
+  const box = document.getElementById('result-char-box');
+  const svg = document.getElementById('result-svg');
+  const msgEl = document.getElementById('result-msg');
+  const subEl = document.getElementById('result-sub');
+
+  if (type === 'slim') {
+    box.className = 'result-char-box result-char-slim';
+    svg.innerHTML = SLIM_SVG;
+    spawnConfetti(['#5BC8AF','#C8F6E8','#FFD93D','#fff']);
+  } else {
+    box.className = 'result-char-box result-char-chubby wobble';
+    svg.innerHTML = CHUBBY_SVG;
+    spawnConfetti(['#FF6B9D','#FFD6E7','#FFD93D','#fff']);
+  }
+
+  msgEl.textContent = msg;
+  subEl.textContent = sub;
+
+  document.getElementById('screen-choice').classList.remove('active');
+  document.getElementById('screen-result').classList.add('active');
+}
+
+function goBack() {
+  document.getElementById('screen-result').classList.remove('active');
+  document.getElementById('screen-choice').classList.add('active');
+  document.getElementById('confetti').innerHTML = '';
+  // remove wobble
+  document.getElementById('result-char-box').classList.remove('wobble');
+}
+
+function spawnConfetti(colors) {
+  const wrap = document.getElementById('confetti');
+  wrap.innerHTML = '';
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-p';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.animationDuration = (1.2 + Math.random() * 1.5) + 's';
+    p.style.animationDelay = (Math.random() * 0.5) + 's';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    wrap.appendChild(p);
+  }
+}
+</script>
+</body>
+</html>
