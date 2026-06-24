@@ -24,24 +24,19 @@
     font-family: 'Nanum Gothic', sans-serif;
     background: var(--bg);
     min-height: 100vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   /* ── SCREENS ── */
   .screen {
     width: 100vw;
-    height: 100vh;
+    min-height: 100vh;
     display: none;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 24px 20px;
-    position: absolute;
-    top: 0; left: 0;
+    justify-content: flex-start;
+    padding: 20px 16px 30px;
   }
   .screen.active { display: flex; }
 
@@ -56,15 +51,15 @@
     color: #999;
     letter-spacing: 2px;
     text-transform: uppercase;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   .question {
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 800;
     color: var(--dark);
     text-align: center;
-    margin-bottom: 28px;
+    margin-bottom: 14px;
     line-height: 1.4;
   }
 
@@ -73,11 +68,11 @@
     display: flex;
     gap: 0;
     width: 100%;
-    max-width: 340px;
-    height: 200px;
+    max-width: 320px;
+    height: 150px;
     border-radius: 24px;
     overflow: hidden;
-    margin-bottom: 28px;
+    margin-bottom: 14px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.12);
     position: relative;
   }
@@ -109,10 +104,11 @@
   }
 
   .char-svg {
-    width: 90px;
-    height: 120px;
+    width: 55px;
+    height: 72px;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
     transition: transform 0.3s;
+    margin-top: 30px;
   }
   .char-half:hover .char-svg { transform: translateY(-6px) scale(1.05); }
 
@@ -131,18 +127,18 @@
   .choices-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
-    max-width: 340px;
+    max-width: 320px;
   }
 
   .choice-btn {
     background: white;
     border: none;
     border-radius: 16px;
-    padding: 14px 10px;
+    padding: 10px 8px;
     font-family: 'Nanum Gothic', sans-serif;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--dark);
     cursor: pointer;
@@ -157,7 +153,7 @@
   }
   .choice-btn:active { transform: scale(0.95); box-shadow: 0 1px 6px rgba(0,0,0,0.1); }
 
-  .choice-btn .emoji { font-size: 22px; }
+  .choice-btn .emoji { font-size: 18px; }
   .choice-btn.good { border-bottom: 3px solid var(--mint); }
   .choice-btn.bad  { border-bottom: 3px solid var(--pink); }
 
@@ -205,14 +201,14 @@
     color: var(--dark);
     text-align: center;
     line-height: 1.5;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   .result-sub {
     font-size: 14px;
     color: #999;
     text-align: center;
-    margin-bottom: 28px;
+    margin-bottom: 14px;
   }
 
   .btn-back {
